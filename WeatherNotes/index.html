@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes & Weather</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f2f2f7;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .weather-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .weather-info {
+            text-align: center;
+        }
+
+        .weather-info h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .weather-info .temp {
+            font-size: 48px;
+            font-weight: 100;
+            margin: 20px 0;
+        }
+
+        .weather-info .description {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .weather-detail {
+            text-align: center;
+        }
+
+        .weather-detail .label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .weather-detail .value {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .notes-section {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e5e5ea;
+        }
+
+        .notes-header h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 300px;
+            margin: 0 20px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #e5e5ea;
+            border-radius: 20px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: #007aff;
+            background-color: white;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8e8e93;
+        }
+
+        .add-btn {
+            background: #007aff;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .add-btn:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .notes-list {
+            min-height: 400px;
+        }
+
+        .note-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .note-item:hover {
+            background-color: #f8f8f8;
+        }
+
+        .note-item:last-child {
+            border-bottom: none;
+        }
+
+        .note-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin-bottom: 8px;
+        }
+
+        .note-preview {
+            font-size: 16px;
+            color: #8e8e93;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-date {
+            font-size: 14px;
+            color: #c7c7cc;
+        }
+
+        .delete-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff3b30;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .note-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #d70015;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #8e8e93;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state h4 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 0;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e5e5ea;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .close-btn, .save-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn {
+            color: #007aff;
+        }
+
+        .save-btn {
+            color: #007aff;
+            font-weight: 600;
+        }
+
+        .close-btn:hover, .save-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e5e5ea;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .notes-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .search-bar {
+                max-width: none;
+                margin: 0;
+            }
+            
+            .weather-details {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Weather Section -->
+        <div class="weather-card">
+            <div class="weather-info">
+                <h2 id="cityName">Ciudad de México</h2>
+                <div class="temp" id="temperature">Cargando...</div>
+                <div class="description" id="description">Obteniendo clima...</div>
+                <div class="weather-details">
+                    <div class="weather-detail">
+                        <div class="label">Sensación térmica</div>
+                        <div class="value" id="feelsLike">--°</div>
+                    </div>
+                    <div class="weather-detail">
+                        <div class="label">Humedad</div>
+                        <div class="value" id="humidity">--%</div>
+                    </div>
+                    <div class="weather-detail">
+                        <div class="label">Viento</div>
+                        <div class="value" id="windSpeed">-- km/h</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="notes-section">
+            <div class="notes-header">
+                <h3>Notas</h3>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Buscar en notas...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <button class="add-btn" onclick="openModal()">+</button>
+            </div>
+            <div class="notes-list" id="notesList">
+                <div class="empty-state">
+                    <div class="icon">📝</div>
+                    <h4>No hay notas aún</h4>
+                    <p>Toca el botón + para crear tu primera nota</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding/editing notes -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeModal()">Cancelar</button>
+                <h3 id="modalTitle">Nueva Nota</h3>
+                <button class="save-btn" onclick="saveNote()">Guardar</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="noteTitle" placeholder="Título">
+                </div>
+                <div class="input-group">
+                    <textarea id="noteContent" placeholder="Escribe tu nota aquí..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Notes management
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let currentEditIndex = -1;
+
+        // Weather API - Get API key from environment
+        let API_KEY = '';
+        
+        // Try to get API key from server
+        async function getApiKey() {
+            try {
+                const response = await fetch('/api/weather-key');
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.apiKey;
+                }
+            } catch (error) {
+                console.log('Using fallback method for API key');
+            }
+            
+            // If server endpoint doesn't exist, try environment variable pattern
+            return window.ENV?.OPENWEATHER_API_KEY || '';
+        }
+
+        const CITY = 'Mexico City,MX';
+
+        // Load weather and notes on page load
+        window.addEventListener('load', async function() {
+            API_KEY = await getApiKey();
+            fetchWeather();
+            displayNotes();
+        });
+
+        async function fetchWeather() {
+            try {
+                // If no API key available, show placeholder
+                if (!API_KEY) {
+                    document.getElementById('temperature').textContent = '25°';
+                    document.getElementById('description').textContent = 'Clima no disponible';
+                    document.getElementById('feelsLike').textContent = '27°';
+                    document.getElementById('humidity').textContent = '65%';
+                    document.getElementById('windSpeed').textContent = '10 km/h';
+                    return;
+                }
+
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric&lang=es`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateWeatherUI(data);
+                } else {
+                    document.getElementById('temperature').textContent = 'Error';
+                    document.getElementById('description').textContent = 'No se pudo cargar el clima';
+                    console.error('Weather API error:', data);
+                }
+            } catch (error) {
+                document.getElementById('temperature').textContent = 'Error';
+                document.getElementById('description').textContent = 'Sin conexión a internet';
+                console.error('Error fetching weather:', error);
+            }
+        }
+
+        function updateWeatherUI(data) {
+            document.getElementById('cityName').textContent = 'Ciudad de México';
+            document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°`;
+            document.getElementById('description').textContent = data.weather[0].description;
+            document.getElementById('feelsLike').textContent = `${Math.round(data.main.feels_like)}°`;
+            document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+            document.getElementById('windSpeed').textContent = `${Math.round(data.wind.speed * 3.6)} km/h`;
+        }
+
+        function openModal() {
+            document.getElementById('noteModal').style.display = 'block';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            document.getElementById('modalTitle').textContent = 'Nueva Nota';
+            currentEditIndex = -1;
+            document.getElementById('noteTitle').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('noteModal').style.display = 'none';
+        }
+
+        function saveNote() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+            
+            if (title || content) {
+                const note = {
+                    id: Date.now(),
+                    title: title || 'Sin título',
+                    content: content,
+                    createdAt: new Date().toISOString()
+                };
+                
+                if (currentEditIndex >= 0) {
+                    note.id = notes[currentEditIndex].id;
+                    notes[currentEditIndex] = note;
+                } else {
+                    notes.unshift(note);
+                }
+                
+                localStorage.setItem('notes', JSON.stringify(notes));
+                displayNotes();
+                closeModal();
+                
+                // Show success message
+                showMessage(currentEditIndex >= 0 ? 'Nota actualizada' : 'Nota guardada');
+            }
+        }
+
+        function displayNotes() {
+            const notesList = document.getElementById('notesList');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredNotes = notes.filter(note => 
+                note.title.toLowerCase().includes(searchTerm) ||
+                note.content.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredNotes.length === 0) {
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <h4>${searchTerm ? 'No se encontraron notas' : 'No hay notas aún'}</h4>
+                        <p>${searchTerm ? 'Intenta con otros términos de búsqueda' : 'Toca el botón + para crear tu primera nota'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            notesList.innerHTML = filteredNotes.map((note) => {
+                const originalIndex = notes.findIndex(n => n.id === note.id);
+                return `
+                    <div class="note-item" onclick="editNote(${originalIndex})">
+                        <div class="note-title">${note.title}</div>
+                        <div class="note-preview">${note.content}</div>
+                        <div class="note-date">${formatDate(note.createdAt)}</div>
+                        <button class="delete-btn" onclick="deleteNote(event, ${originalIndex})">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function editNote(index) {
+            const note = notes[index];
+            document.getElementById('noteTitle').value = note.title;
+            document.getElementById('noteContent').value = note.content;
+            document.getElementById('modalTitle').textContent = 'Editar Nota';
+            currentEditIndex = index;
+            document.getElementById('noteModal').style.display = 'block';
+        }
+
+        function deleteNote(event, index) {
+            event.stopPropagation(); // Prevent triggering editNote
+            if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
+                notes.splice(index, 1);
+                localStorage.setItem('notes', JSON.stringify(notes));
+                displayNotes();
+                showMessage('Nota eliminada');
+            }
+        }
+
+        function showMessage(message) {
+            // Create a simple toast message
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                z-index: 9999;
+                font-size: 14px;
+                font-weight: 500;
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                if (diffHours === 0) {
+                    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                    return diffMinutes < 1 ? 'Ahora' : `${diffMinutes} min`;
+                }
+                return `${diffHours}h`;
+            } else if (diffDays === 1) {
+                return 'Ayer';
+            } else if (diffDays < 7) {
+                return `${diffDays} días`;
+            } else {
+                return date.toLocaleDateString('es-ES', { 
+                    day: 'numeric', 
+                    month: 'short' 
+                });
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', displayNotes);
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('noteModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+            if (event.ctrlKey && event.key === 'n') {
+                event.preventDefault();
+                openModal();
+            }
+        });
+    </script>
+</body>
+</html>
